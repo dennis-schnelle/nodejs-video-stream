@@ -1,11 +1,16 @@
+const path = require('path');
+
 module.exports = {
-    entry: './src/app.tsx',
+    entry: './src/main.tsx',
     output: {
         path: __dirname + '/public',
-        filename: 'build/app.js',
+        filename: 'build/main.js',
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js'],
+        alias: {
+            components: path.resolve(__dirname, './src/components'),
+        },
     },
     module: {
         rules: [{ test: /\.tsx?$/, loader: 'awesome-typescript-loader' }],
