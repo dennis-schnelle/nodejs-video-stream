@@ -5,7 +5,9 @@
     "main": "index.js",
     "scripts": {
         "build": "webpack -p",
-        "start": "webpack-dev-server -d --content-base ./public",
+        "start:app": "webpack-dev-server -d --content-base ./public",
+        "start:server": "webpack --watch --mode=development --config webpack.server.config",
+        "start": "npm-run-all --parallel start:*",
         "test": "jest",
         "lint": "eslint 'src/**/*.{js,ts}'",
         "lint:fix": "eslint 'src/**/**/*.{js,ts}' --quiet --fix"
@@ -50,6 +52,8 @@
     "dependencies": {
         "@types/react": "^16.9.33",
         "@types/react-dom": "^16.9.6",
+        "cors": "^2.8.5",
+        "express": "^4.17.1",
         "react": "^16.13.1",
         "react-dom": "^16.13.1",
         "react-helmet": "^5.2.1",

@@ -1,0 +1,9 @@
+{
+    "video": "Test Video",
+    "resolutions": {
+        "240p": "https://elasticbeanstalk-us-east-2-259633680310.s3.us-east-2.amazonaws.com/video_240p.mp4",
+        "360p": "https://elasticbeanstalk-us-east-2-259633680310.s3.us-east-2.amazonaws.com/video_360p.mp4",
+        "540p": "https://elasticbeanstalk-us-east-2-259633680310.s3.us-east-2.amazonaws.com/video_540p.mp4",
+        "720p": "https://elasticbeanstalk-us-east-2-259633680310.s3.us-east-2.amazonaws.com/video_720p.mp4"
+    }
+}

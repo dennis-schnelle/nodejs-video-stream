@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "outDir": "./dist/",
         "noImplicitAny": false,
         "module": "commonjs",
         "moduleResolution": "node",
@@ -14,7 +13,7 @@
         "lib": ["es6", "dom", "esnext"],
         "paths": {
             "src/*": ["src/*"],
-            "components/*": ["src/components/*"],
+            "components/*": ["src/app/components/*"],
             "tests/*": ["tests/*"]
         },
         "baseUrl": "./",
