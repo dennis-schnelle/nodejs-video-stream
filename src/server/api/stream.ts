@@ -1,7 +1,8 @@
 import { Application, Request, Response } from 'express';
 import { requestProvider, parseProtocol } from '../utils';
-import { getVideoByIdRequest, Video, VideoSource, getVideosRequest } from '../services/video';
+import { getVideoByIdRequest, getVideosRequest, Video, VideoSource } from '../services/video';
 import es from 'event-stream';
+import { IncomingMessage, IncomingHttpHeaders } from 'http';
 
 type VideoStreamRequestParams = {
     id: string;
@@ -9,6 +10,13 @@ type VideoStreamRequestParams = {
 };
 
 type VideosRequestParams = {};
+
+type MediaFileHeaders = {
+    'accept-ranges'?: string;
+    'content-range'?: string;
+    'content-type'?: string;
+    'content-length'?: string;
+};
 
 /**
  * TODOS:
@@ -20,26 +28,21 @@ const GET_VIDEO_STREAM__ENDPOINT = `/w/:id/:source`;
 const GET_VIDEOS__ENDPOINT = '/videos';
 
 /**
- * Collects content response headers
- * @param response HTTP Response
+ * Maps media file headers for media stream buffering
+ * @param headers IncomingHttpHeaders
  */
-const extractContentHeaders = response => {
-    const contentHeaders = {
-        'Content-Length': response.headers['content-length'],
-        'Content-Type': response.headers['content-type'],
+const mapMediaFileHeaders = (headers: IncomingHttpHeaders): MediaFileHeaders => {
+    const mediaFileHeaders: MediaFileHeaders = {
+        'content-length': headers['content-length'],
+        'content-type': headers['content-type'],
     };
 
-    const rangeHeaders = {};
-
-    if (response.headers['content-range']) {
-        rangeHeaders['Content-Range'] = response.headers['content-range'];
-        rangeHeaders['Accept-Ranges'] = response.headers['accept-ranges'];
+    if (headers['content-range']) {
+        mediaFileHeaders['content-range'] = headers['content-range'];
+        mediaFileHeaders['accept-ranges'] = headers['accept-ranges'];
     }
 
-    return {
-        ...rangeHeaders,
-        ...contentHeaders,
-    };
+    return mediaFileHeaders;
 };
 
 /**
@@ -47,7 +50,7 @@ const extractContentHeaders = response => {
  * @param req Express req object
  * @param res Express res stream
  */
-const cdnProxyTunnel = (req: Request, res: Response) =>
+const mediaProxyStream = (req: Request, res: Response) =>
     es.map((data: VideoSource) =>
         requestProvider(parseProtocol(data.source)).get(
             data.source,
@@ -56,8 +59,8 @@ const cdnProxyTunnel = (req: Request, res: Response) =>
                     Range: req.headers['range'] || '',
                 },
             },
-            response => {
-                res.writeHead(req.headers['range'] ? 206 : 200, extractContentHeaders(response));
+            (response: IncomingMessage) => {
+                res.writeHead(req.headers['range'] ? 206 : 200, mapMediaFileHeaders(response.headers));
                 response.pipe(res);
             },
         ),
@@ -67,7 +70,7 @@ const cdnProxyTunnel = (req: Request, res: Response) =>
  * Finds source according to sourceId
  * @param sourceId
  */
-const mapSource = (sourceId: string) =>
+const mapSourceStream = (sourceId: string) =>
     es.map((data: Video, callback) =>
         callback(
             null,
@@ -82,11 +85,11 @@ const mapSource = (sourceId: string) =>
  */
 const getVideo = (req: Request, res: Response) =>
     // TODO: Cache this?
-    getVideoByIdRequest(req.params.id, response =>
+    getVideoByIdRequest(req.params.id, (response: IncomingMessage) =>
         response
             .pipe(es.parse())
-            .pipe(mapSource(req.params.source))
-            .pipe(cdnProxyTunnel(req, res)),
+            .pipe(mapSourceStream(req.params.source))
+            .pipe(mediaProxyStream(req, res)),
     );
 
 /**
@@ -94,7 +97,7 @@ const getVideo = (req: Request, res: Response) =>
  * @param req
  * @param res
  */
-const getVideos = (req: Request, res: Response) => getVideosRequest(response => response.pipe(res));
+const getVideos = (req: Request, res: Response) => getVideosRequest((response: IncomingMessage) => response.pipe(res));
 
 /**
  * Adds mocks to the api
