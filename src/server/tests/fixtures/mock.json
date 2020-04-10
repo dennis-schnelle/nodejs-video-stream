@@ -1,0 +1,31 @@
+{
+    "videos": [
+        {
+            "id": 0,
+            "filename": "myVideo.mp4",
+            "title": "Test Video",
+            "sources": [
+                {
+                    "id": "AXy37x-1",
+                    "resolution": "240p",
+                    "source": "https://elasticbeanstalk-us-east-2-259633680310.s3.us-east-2.amazonaws.com/video_240p.mp4"
+                },
+                {
+                    "id": "AXy37x-2",
+                    "resolution": "360p",
+                    "source": "https://elasticbeanstalk-us-east-2-259633680310.s3.us-east-2.amazonaws.com/video_360p.mp4"
+                },
+                {
+                    "id": "AXy37x-3",
+                    "resolution": "540p",
+                    "source": "https://elasticbeanstalk-us-east-2-259633680310.s3.us-east-2.amazonaws.com/video_540p.mp4"
+                },
+                {
+                    "id": "AXy37x-4",
+                    "resolution": "720p",
+                    "source": "https://elasticbeanstalk-us-east-2-259633680310.s3.us-east-2.amazonaws.com/video_720p.mp4"
+                }
+            ]
+        }
+    ]
+}
