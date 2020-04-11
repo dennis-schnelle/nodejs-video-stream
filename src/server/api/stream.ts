@@ -18,12 +18,6 @@ type MediaFileHeaders = {
     'content-length'?: string;
 };
 
-/**
- * TODOS:
- * - Think about quality solution - later
- * - Think about API prefixing and versioning node.js (research)
- */
-
 const GET_VIDEO_STREAM__ENDPOINT = `/w/:id/:source`;
 const GET_VIDEOS__ENDPOINT = '/videos';
 
@@ -31,27 +25,20 @@ const GET_VIDEOS__ENDPOINT = '/videos';
  * Maps media file headers for media stream buffering
  * @param headers IncomingHttpHeaders
  */
-const mapMediaFileHeaders = (headers: IncomingHttpHeaders): MediaFileHeaders => {
-    const mediaFileHeaders: MediaFileHeaders = {
-        'content-length': headers['content-length'],
-        'content-type': headers['content-type'],
-    };
-
-    if (headers['content-range']) {
-        mediaFileHeaders['content-range'] = headers['content-range'];
-        mediaFileHeaders['accept-ranges'] = headers['accept-ranges'];
-    }
-
-    return mediaFileHeaders;
-};
+const mapMediaFileHeaders = (headers: IncomingHttpHeaders): MediaFileHeaders => ({
+    'accept-ranges': headers['accept-ranges'] || '',
+    'content-length': headers['content-length'] || '',
+    'content-range': headers['content-range'] || '',
+    'content-type': headers['content-type'] || '',
+});
 
 /**
  * Tunnels request to external url and includes Range-Header
  * @param req Express req object
  * @param res Express res stream
  */
-const mediaProxyStream = (req: Request, res: Response) =>
-    es.map((data: VideoSource) =>
+const proxyStream = (req: Request) =>
+    es.map((data: VideoSource, callback: (context: null, response: IncomingMessage) => void) =>
         requestProvider(parseProtocol(data.source)).get(
             data.source,
             {
@@ -59,18 +46,26 @@ const mediaProxyStream = (req: Request, res: Response) =>
                     Range: req.headers['range'] || '',
                 },
             },
-            (response: IncomingMessage) => {
-                res.writeHead(req.headers['range'] ? 206 : 200, mapMediaFileHeaders(response.headers));
-                response.pipe(res);
-            },
+            (response: IncomingMessage) => callback(null, response),
         ),
     );
+
+/**
+ * Maps Stream response headers to current response stream
+ * @param req
+ * @param res
+ */
+const writeProxyHeaders = (req: Request, res: Response) =>
+    es.map((data: IncomingMessage, callback: (context: null, response: IncomingMessage) => void) => {
+        res.writeHead(req.headers['range'] ? 206 : 200, mapMediaFileHeaders(data.headers));
+        callback(null, data);
+    });
 
 /**
  * Finds source according to sourceId
  * @param sourceId
  */
-const mapSourceStream = (sourceId: string) =>
+const mapVideoSource = (sourceId: string) =>
     es.map((data: Video, callback) =>
         callback(
             null,
@@ -84,12 +79,18 @@ const mapSourceStream = (sourceId: string) =>
  * @param res
  */
 const getVideo = (req: Request, res: Response) =>
-    // TODO: Cache this?
     getVideoByIdRequest(req.params.id, (response: IncomingMessage) =>
         response
+            /* Parse JSON Response */
             .pipe(es.parse())
-            .pipe(mapSourceStream(req.params.source))
-            .pipe(mediaProxyStream(req, res)),
+            /* Map video source entity */
+            .pipe(mapVideoSource(req.params.source))
+            /* Tunnel request into video soure url */
+            .pipe(proxyStream(req))
+            /* Extract media headers into response */
+            .pipe(writeProxyHeaders(req, res))
+            /* Pipe proxy response to our endpoint response */
+            .pipe(es.map(proxy => proxy.pipe(res))),
     );
 
 /**
