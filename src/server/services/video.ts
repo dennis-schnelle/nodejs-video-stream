@@ -1,6 +1,8 @@
 import { requestProvider, parseProtocol } from '../utils';
 import { IncomingMessage } from 'http';
 
+const VIDEODB_MOCK_HOST = 'http://localhost:3000';
+
 export type Video = {
     id: number;
     filename: string;
@@ -13,8 +15,6 @@ export type VideoSource = {
     resolution: string;
     source: string;
 };
-
-const VIDEODB_MOCK_HOST = 'http://localhost:3000';
 
 export const getVideoByIdRequest = (id: string, callback: (response: IncomingMessage) => void) =>
     requestProvider(parseProtocol(VIDEODB_MOCK_HOST)).get(`${VIDEODB_MOCK_HOST}/videos/${id}`, callback);

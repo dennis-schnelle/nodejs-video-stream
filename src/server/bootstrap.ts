@@ -9,6 +9,4 @@ const PORT = 80;
 addCorsMiddleware(app);
 addStreamApi(app);
 
-app.listen(PORT, () => {
-    console.log(`App listening on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`App listening on port ${PORT}`));
