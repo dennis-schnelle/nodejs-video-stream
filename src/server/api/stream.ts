@@ -4,6 +4,9 @@ import { getVideoByIdRequest, getVideosRequest, Video, VideoSource } from '../se
 import es from 'event-stream';
 import { IncomingMessage, IncomingHttpHeaders } from 'http';
 
+const GET_VIDEO_STREAM__ENDPOINT = `/w/:id/:source`;
+const GET_VIDEOS__ENDPOINT = '/videos';
+
 type VideoStreamRequestParams = {
     id: string;
     source: string;
@@ -17,9 +20,6 @@ type MediaFileHeaders = {
     'content-type'?: string;
     'content-length'?: string;
 };
-
-const GET_VIDEO_STREAM__ENDPOINT = `/w/:id/:source`;
-const GET_VIDEOS__ENDPOINT = '/videos';
 
 /**
  * Maps media file headers for media stream buffering
