@@ -37,7 +37,7 @@ const mapMediaFileHeaders = (headers: IncomingHttpHeaders): MediaFileHeaders => 
  * @param req Express req object
  * @param res Express res stream
  */
-const proxyStream = (req: Request) =>
+const proxyStream = (req: Request): es.MapStream =>
     es.map((data: VideoSource, callback: (context: null, response: IncomingMessage) => void) =>
         requestProvider(parseProtocol(data.source)).get(
             data.source,
@@ -55,7 +55,7 @@ const proxyStream = (req: Request) =>
  * @param req
  * @param res
  */
-const writeProxyHeaders = (req: Request, res: Response) =>
+const writeProxyHeaders = (req: Request, res: Response): es.MapStream =>
     es.map((data: IncomingMessage, callback: (context: null, response: IncomingMessage) => void) => {
         res.writeHead(req.headers['range'] ? 206 : 200, mapMediaFileHeaders(data.headers));
         callback(null, data);
@@ -65,7 +65,7 @@ const writeProxyHeaders = (req: Request, res: Response) =>
  * Finds source according to sourceId
  * @param sourceId
  */
-const mapVideoSource = (sourceId: string) =>
+const mapVideoSource = (sourceId: string): es.MapStream =>
     es.map((data: Video, callback) =>
         callback(
             null,
