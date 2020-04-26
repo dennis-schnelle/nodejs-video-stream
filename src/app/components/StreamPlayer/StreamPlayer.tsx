@@ -7,6 +7,7 @@ import Volume from '../Volume';
 import Quality from '../Quality';
 import Overlay from '../Overlay';
 import Controls from '../Controls';
+import PlayVideo from '../../hooks/PlayVideo';
 
 export type StreamPlayerProps = {
     children?: React.ReactNode;
@@ -38,26 +39,6 @@ const Container = styled.div<Dimension>`
  */
 const pickDimension = (dimensions: Dimensions) => dimensions[Object.keys(dimensions).pop()];
 
-type PlayVideoProps = {
-    videoElement: React.MutableRefObject<HTMLVideoElement>;
-};
-
-const PlayVideo = (props: PlayVideoProps): [boolean, React.Dispatch<React.SetStateAction<boolean>>] => {
-    const [isPlaying, setIsPlaying] = React.useState(false);
-
-    React.useEffect(() => {
-        if (isPlaying) {
-            props.videoElement.current.play();
-        } else {
-            props.videoElement.current.pause();
-        }
-
-        return () => props.videoElement.current.pause();
-    });
-
-    return [isPlaying, setIsPlaying];
-};
-
 const StreamPlayer: React.FunctionComponent<StreamPlayerProps> = ({ dimensions, children }) => {
     const dimension = pickDimension(dimensions);
     const videoElement = React.useRef<HTMLVideoElement>(null);
@@ -66,14 +47,17 @@ const StreamPlayer: React.FunctionComponent<StreamPlayerProps> = ({ dimensions, 
     const [isPlaying, setIsPlaying] = PlayVideo({ videoElement });
 
     return (
-        <div onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+        <div
+            onMouseEnter={() => !isHovered && setIsHovered(true)}
+            onMouseLeave={() => isHovered && setIsHovered(false)}
+        >
             <IconContext.Provider value={iconStyle}>
                 <Container {...dimension}>
                     <video ref={videoElement} {...dimension}>
                         {children}
                     </video>
                     <Overlay shown={isHovered}>
-                        <Timeline end={234} current={5} />
+                        <Timeline videoRef={videoElement} />
                         <Controls>
                             <PlayPause onClick={() => setIsPlaying(!isPlaying)} isPlaying={isPlaying} />
                             <Volume />
