@@ -1,1 +1,1 @@
-export { default } from './StreamPlayer';
+export { default, Dimensions } from './StreamPlayer';

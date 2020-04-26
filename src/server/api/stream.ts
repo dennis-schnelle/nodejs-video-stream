@@ -4,8 +4,8 @@ import { getVideoByIdRequest, getVideosRequest, Video, VideoSource } from '../se
 import es from 'event-stream';
 import { IncomingMessage, IncomingHttpHeaders } from 'http';
 
-const GET_VIDEO_STREAM__ENDPOINT = `/w/:id/:source`;
-const GET_VIDEOS__ENDPOINT = '/videos';
+const ENDPOINT__GET_VIDEO_STREAM = `/w/:id/:source`;
+const ENDPOINT__GET_VIDEOS = '/videos';
 
 type VideoStreamRequestParams = {
     id: string;
@@ -105,6 +105,6 @@ const getVideos = (req: Request, res: Response) => getVideosRequest((response: I
  * @param app Express application
  */
 export const addStreamApi = (app: Application): void => {
-    app.get<VideoStreamRequestParams>(GET_VIDEO_STREAM__ENDPOINT, getVideo);
-    app.get<VideosRequestParams>(GET_VIDEOS__ENDPOINT, getVideos);
+    app.get<VideoStreamRequestParams>(ENDPOINT__GET_VIDEO_STREAM, getVideo);
+    app.get<VideosRequestParams>(ENDPOINT__GET_VIDEOS, getVideos);
 };

@@ -1,11 +1,11 @@
 import React from 'react';
 import { mount } from 'enzyme';
 
-import StreamPlayer from './index';
+import Timeline from './index';
 
 describe('<StreamPlayer />', () => {
     it('should render', () => {
-        const renderedComponent = mount(<StreamPlayer dimensions={{ 1024: { width: 500, height: 500 } }} />);
+        const renderedComponent = mount(<Timeline end={20} current={3} />);
 
         expect(renderedComponent).toBeTruthy();
     });

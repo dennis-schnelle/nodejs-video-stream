@@ -8,7 +8,15 @@
         "sourceMap": false,
         "allowJs": true,
         "typeRoots": ["node_modules/@types"],
-        "types": ["@types/node", "@types/jest", "@types/express", "@types/event-stream", "node", "core-js"],
+        "types": [
+            "@types/node",
+            "@types/jest",
+            "@types/express",
+            "@types/event-stream",
+            "@types/styled-components",
+            "node",
+            "core-js"
+        ],
         "allowSyntheticDefaultImports": true,
         "lib": ["es6", "dom", "esnext"],
         "paths": {

@@ -29,6 +29,7 @@
         "@types/express": "^4.17.6",
         "@types/jest": "^25.2.1",
         "@types/node": "^13.9.0",
+        "@types/styled-components": "^5.1.0",
         "@typescript-eslint/eslint-plugin": "^2.23.0",
         "@typescript-eslint/parser": "^2.23.0",
         "awesome-typescript-loader": "^5.2.1",
@@ -61,7 +62,9 @@
         "json-server": "^0.16.1",
         "react": "^16.13.1",
         "react-dom": "^16.13.1",
+        "react-google-font-loader": "^1.1.0",
         "react-helmet": "^5.2.1",
+        "react-icons": "^3.9.0",
         "styled-components": "^5.1.0"
     }
 }
