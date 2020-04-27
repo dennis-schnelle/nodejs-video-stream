@@ -43,7 +43,7 @@ const StreamPlayer: React.FunctionComponent<StreamPlayerProps> = ({ dimensions, 
     const dimension = pickDimension(dimensions);
     const videoElement = React.useRef<HTMLVideoElement>(null);
 
-    const [isHovered, setIsHovered] = React.useState(false);
+    const [isHovered, setIsHovered] = React.useState<boolean>(false);
     const [isPlaying, setIsPlaying] = PlayVideo({ videoElement });
 
     return (

@@ -1,7 +1,7 @@
 import { Application, Request, Response } from 'express';
 import { requestProvider, parseProtocol } from '../utils';
 import { getVideoByIdRequest, getVideosRequest, Video, VideoSource } from '../services/video';
-import es from 'event-stream';
+import { map, parse } from 'event-stream';
 import { IncomingMessage, IncomingHttpHeaders } from 'http';
 
 const ENDPOINT__GET_VIDEO_STREAM = `/w/:id/:source`;
@@ -37,17 +37,18 @@ const mapMediaFileHeaders = (headers: IncomingHttpHeaders): MediaFileHeaders => 
  * @param req Express req object
  * @param res Express res stream
  */
-const proxyStream = (req: Request): es.MapStream =>
-    es.map((data: VideoSource, callback: (context: null, response: IncomingMessage) => void) =>
-        requestProvider(parseProtocol(data.source)).get(
-            data.source,
-            {
-                headers: {
-                    Range: req.headers['range'] || '',
-                },
+const proxyStream = (req: Request) => (
+    data: VideoSource,
+    callback: (context: null, response: IncomingMessage) => void,
+) =>
+    requestProvider(parseProtocol(data.source)).get(
+        data.source,
+        {
+            headers: {
+                Range: req.headers['range'] || '',
             },
-            (response: IncomingMessage) => callback(null, response),
-        ),
+        },
+        (response: IncomingMessage) => callback(null, response),
     );
 
 /**
@@ -55,22 +56,22 @@ const proxyStream = (req: Request): es.MapStream =>
  * @param req
  * @param res
  */
-const writeProxyHeaders = (req: Request, res: Response): es.MapStream =>
-    es.map((data: IncomingMessage, callback: (context: null, response: IncomingMessage) => void) => {
-        res.writeHead(req.headers['range'] ? 206 : 200, mapMediaFileHeaders(data.headers));
-        callback(null, data);
-    });
+const writeProxyHeaders = (req: Request, res: Response) => (
+    data: IncomingMessage,
+    callback: (context: null, response: IncomingMessage) => void,
+) => {
+    res.writeHead(req.headers['range'] ? 206 : 200, mapMediaFileHeaders(data.headers));
+    callback(null, data);
+};
 
 /**
  * Finds source according to sourceId
  * @param sourceId
  */
-const mapVideoSource = (sourceId: string): es.MapStream =>
-    es.map((data: Video, callback) =>
-        callback(
-            null,
-            data.sources.find(source => source.id === sourceId),
-        ),
+const mapVideoSource = (sourceId: string) => (data: Video, callback) =>
+    callback(
+        null,
+        data.sources.find(source => source.id === sourceId),
     );
 
 /**
@@ -82,15 +83,15 @@ const getVideo = (req: Request, res: Response) =>
     getVideoByIdRequest(req.params.id, (response: IncomingMessage) =>
         response
             /* Parse JSON Response */
-            .pipe(es.parse())
+            .pipe(parse())
             /* Map video source entity */
-            .pipe(mapVideoSource(req.params.source))
+            .pipe(map(mapVideoSource(req.params.source)))
             /* Tunnel request into video soure url */
-            .pipe(proxyStream(req))
+            .pipe(map(proxyStream(req)))
             /* Extract media headers into response */
-            .pipe(writeProxyHeaders(req, res))
+            .pipe(map(writeProxyHeaders(req, res)))
             /* Pipe proxy response to our endpoint response */
-            .pipe(es.map(proxy => proxy.pipe(res))),
+            .pipe(map(proxy => proxy.pipe(res))),
     );
 
 /**
